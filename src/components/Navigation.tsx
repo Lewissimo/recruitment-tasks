@@ -1,24 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Box,
-  Button,
   Collapse,
-  FormControl,
   Grid,
   IconButton,
-  Input,
-  InputLabel,
-  MenuItem,
   Pagination,
-  Select,
-  SelectChangeEvent,
-  TextField,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { observer } from "mobx-react";
 import { tagsStore } from "../stories/TagsStore";
-import { filterEnum } from "../services/ApiCommunication";
 import ColapseInputs from "./NavComponents/ColapseInputs";
 const Navigation = observer(() => {
   const [open, setOpen] = useState(false);

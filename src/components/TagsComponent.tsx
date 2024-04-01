@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import {
   Table,
@@ -8,18 +8,12 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
   Typography,
   Skeleton,
 } from "@mui/material";
 import { tagsStore } from "../stories/TagsStore";
-import { fetchTags, filterEnum } from "../services/ApiCommunication";
-import { Tag } from "../services/types";
 
 const FetchTags = observer(() => {
-  const [tags, setTags] = useState<Tag[] | null>(null);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
   useEffect(() => {
     tagsStore.fetchTags().catch((error) => console.error(error));
   }, []);
@@ -27,8 +21,6 @@ const FetchTags = observer(() => {
     window.open(tagUrl, "_blank");
   };
 
-  const handlePrevPage = () => setPage((prevPage) => Math.max(1, prevPage - 1));
-  const handleNextPage = () => setPage((prevPage) => prevPage + 1);
 
   return (
     <>
@@ -78,7 +70,7 @@ const FetchTags = observer(() => {
         </Table>
       </TableContainer>
       <Typography variant="body2" color="textSecondary" align="center">
-        Page: {page}
+        Page: {tagsStore.pageNum}
       </Typography>
     </>
   );
