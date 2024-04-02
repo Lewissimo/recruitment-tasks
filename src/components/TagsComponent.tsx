@@ -8,7 +8,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
   Skeleton,
 } from "@mui/material";
 import { tagsStore } from "../stories/TagsStore";
@@ -21,16 +20,19 @@ const FetchTags = observer(() => {
     window.open(tagUrl, "_blank");
   };
 
-
   return (
     <>
       <TableContainer
         component={Paper}
         sx={{
           transition: ".7s",
-          opacity: tagsStore.tableVisible ? 1 : 0
-        }}>
-        <Table aria-label="simple table">
+          height: "80svh",
+          overflow: "auto",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#888 #f0f0f0",
+        }}
+      >
+        <Table aria-label="simple table" stickyHeader>
           <TableHead>
             <TableRow>
               <TableCell>Tag</TableCell>
@@ -48,13 +50,11 @@ const FetchTags = observer(() => {
                 }}
                 sx={{
                   cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.04)",
-                  },
-                }}>
+                }}
+              >
                 {tagsStore.isLoading ? (
-                  <TableCell colSpan={2} >
-                    <Skeleton sx={{position: "relative", zIndex: '0'}}/>
+                  <TableCell colSpan={2}>
+                    <Skeleton sx={{ position: "relative", zIndex: "0" }} />
                   </TableCell>
                 ) : (
                   <>
@@ -69,9 +69,6 @@ const FetchTags = observer(() => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Typography variant="body2" color="textSecondary" align="center">
-        Page: {tagsStore.pageNum}
-      </Typography>
     </>
   );
 });

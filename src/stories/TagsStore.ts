@@ -14,35 +14,50 @@ enum errorStates {
   TAG_PER_PAGE_NOT_IN_RANGE = "Amount of tags per page must be in range 1-300",
   CONNECTION_ERROR = "Somthing is wrong with the connection. Try again leter"
 }
+export const defaultValues = {
+  tagsPerPage: 10,
+  filter: filterEnum.ALPHABETICALLY,
+  dataFrom: 'YYYY-MM-DD',
+  dataTo: 'YYYY-MM-DD',
+  orderEnum: orderEnum.growing
+}
+
 
 const tagsState = makeAutoObservable({
-  tableVisible: false,
-
-  totalTags: 0,
   tags: [] as Tag[],
+  totalTags: 0,
   isLoading: false,
-  pageNum: 1,
-  tagsPerPage: 10 as number | null,
-  tagsPerPageAc: 10,
-  pattern: "",
-  filter: filterEnum.ALPHABETICALLY,
-  dataDiplayed: false,
-  errorMessage: '',
-  errSwitch: false,
 
-  dateFrom: null as string | null,
+  // filters values
+  pageNum: 1,
+  valuesChanged: false,
+  tagsPerPage: 10 as number | null,  
+  tagsPerPageAc: 10,
+  filter: filterEnum.ALPHABETICALLY,
+  pattern: "",
+  dateFrom: 'YYYY-MM-DD' as string | null,
+  dateTo: 'YYYY-MM-DD' as string | null,
   thisDateFromUnix: null as string | null,
-  dateTo: null as string | null,
   thisDateToUnix: null as string | null,
   order: orderEnum.growing,
 
-
-  setErrorMessage(errorMessage: string){
-    this.errorMessage = errorMessage;
+  
+  dataDiplayed: false,
+  errorMessage: '',
+  errSwitch: false,
+  
+  
+  checkIsValuesChanged(){
+    if(this.tagsPerPage !== defaultValues.tagsPerPage || this.filter !== defaultValues.filter || this.dateFrom !== defaultValues.dataFrom || this.dateTo !== defaultValues.dataTo || this.order !== defaultValues.orderEnum){
+      this.valuesChanged = true;
+    }
+    else{
+      this.valuesChanged = false;
+    }
   },
 
-  setTableVisible(value: boolean){
-    this.tableVisible = value;
+  setErrorMessage(errorMessage: string){
+      this.errorMessage = errorMessage;
   },
 
   setParams({
@@ -62,13 +77,13 @@ const tagsState = makeAutoObservable({
     dateTo: string | null;
     order: orderEnum;
   }) {
-    
-    if(dateFrom){
+
+    if(dateFrom && dateFrom !== 'YYYY-MM-DD'){
       const dateFromObject = new Date(dateFrom);
       const fromDateUnix = Math.floor(dateFromObject.getTime() / 1000).toString();
       this.thisDateFromUnix = fromDateUnix;
     }
-    if(dateTo){
+    if(dateTo && dateTo !== 'YYYY-MM-DD'){
       const dateToObject = new Date(dateTo);
       const toDateUnix = Math.floor(dateToObject.getTime() / 1000).toString();
       this.thisDateToUnix = toDateUnix;
@@ -81,7 +96,10 @@ const tagsState = makeAutoObservable({
     this.dateTo = dateTo;
     this.filter = filter;
     this.order = order;
+    this.checkIsValuesChanged();
   },
+
+
   async fetchTags() {
     this.isLoading = true;
 
