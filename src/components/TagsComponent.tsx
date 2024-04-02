@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import {
   Table,
@@ -8,18 +8,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
-  Typography,
   Skeleton,
 } from "@mui/material";
 import { tagsStore } from "../stories/TagsStore";
-import { fetchTags, filterEnum } from "../services/ApiCommunication";
-import { Tag } from "../services/types";
 
 const FetchTags = observer(() => {
-  const [tags, setTags] = useState<Tag[] | null>(null);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
   useEffect(() => {
     tagsStore.fetchTags().catch((error) => console.error(error));
   }, []);
@@ -27,18 +20,21 @@ const FetchTags = observer(() => {
     window.open(tagUrl, "_blank");
   };
 
-  const handlePrevPage = () => setPage((prevPage) => Math.max(1, prevPage - 1));
-  const handleNextPage = () => setPage((prevPage) => prevPage + 1);
-
   return (
     <>
       <TableContainer
+        
         component={Paper}
         sx={{
           transition: ".7s",
-          opacity: tagsStore.tableVisible ? 1 : 0
-        }}>
-        <Table aria-label="simple table">
+          height: '80svh',
+          overflow: 'auto',
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#888 #f0f0f0',
+        }}
+        
+        >
+        <Table aria-label="simple table" stickyHeader>
           <TableHead>
             <TableRow>
               <TableCell>Tag</TableCell>
@@ -47,19 +43,15 @@ const FetchTags = observer(() => {
           </TableHead>
           <TableBody>
             {tagsStore.tags?.map((tag) => (
-              <TableRow
-                key={tag.name}
-                onClick={() => {
-                  handleRowClick(
-                    `https://stackoverflow.com/questions/tagged/${tag.name}`
-                  );
-                }}
-                sx={{
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.04)",
-                  },
-                }}>
+            <TableRow
+            key={tag.name}
+            onClick={() => {
+              handleRowClick(`https://stackoverflow.com/questions/tagged/${tag.name}`);
+            }}
+            sx={{
+              cursor: "pointer",
+ 
+            }}>
                 {tagsStore.isLoading ? (
                   <TableCell colSpan={2} >
                     <Skeleton sx={{position: "relative", zIndex: '0'}}/>
@@ -77,9 +69,7 @@ const FetchTags = observer(() => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Typography variant="body2" color="textSecondary" align="center">
-        Page: {page}
-      </Typography>
+
     </>
   );
 });

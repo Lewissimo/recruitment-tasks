@@ -14,10 +14,19 @@ enum errorStates {
   TAG_PER_PAGE_NOT_IN_RANGE = "Amount of tags per page must be in range 1-300",
   CONNECTION_ERROR = "Somthing is wrong with the connection. Try again leter"
 }
+export const defaultValues = {
+  tagsPerPage: 10,
+  filter: filterEnum.ALPHABETICALLY,
+  dataFrom: null,
+  dataTo: null,
+  orderEnum: orderEnum.growing
+}
+
 
 const tagsState = makeAutoObservable({
   tableVisible: false,
-
+  
+  valuesChanged: false,
   totalTags: 0,
   tags: [] as Tag[],
   isLoading: false,
@@ -29,15 +38,22 @@ const tagsState = makeAutoObservable({
   dataDiplayed: false,
   errorMessage: '',
   errSwitch: false,
-
+  
   dateFrom: null as string | null,
   thisDateFromUnix: null as string | null,
   dateTo: null as string | null,
   thisDateToUnix: null as string | null,
   order: orderEnum.growing,
-
-
-  setErrorMessage(errorMessage: string){
+  
+  checkIsValuesChanged(){
+    if(this.tagsPerPage !== defaultValues.tagsPerPage || this.filter !== defaultValues.filter || this.dateFrom !== defaultValues.dataFrom || this.dateTo !== defaultValues.dataTo || this.order !== defaultValues.orderEnum){
+      this.valuesChanged = true;
+    }
+    else{
+      this.valuesChanged = false;
+    }
+  },
+setErrorMessage(errorMessage: string){
     this.errorMessage = errorMessage;
   },
 
@@ -62,7 +78,7 @@ const tagsState = makeAutoObservable({
     dateTo: string | null;
     order: orderEnum;
   }) {
-    
+
     if(dateFrom){
       const dateFromObject = new Date(dateFrom);
       const fromDateUnix = Math.floor(dateFromObject.getTime() / 1000).toString();
@@ -81,6 +97,7 @@ const tagsState = makeAutoObservable({
     this.dateTo = dateTo;
     this.filter = filter;
     this.order = order;
+    this.checkIsValuesChanged();
   },
   async fetchTags() {
     this.isLoading = true;
