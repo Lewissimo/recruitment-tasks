@@ -10,18 +10,18 @@ interface Tag {
   count: number;
 }
 
-enum errorStates {
+export enum errorStates {
   TAG_PER_PAGE_NOT_IN_RANGE = "Amount of tags per page must be in range 1-300",
-  CONNECTION_ERROR = "Somthing is wrong with the connection. Try again leter"
+  CONNECTION_ERROR = "Something is wrong with the connection. Try again leter",
 }
 export const defaultValues = {
   tagsPerPage: 10,
   filter: filterEnum.ALPHABETICALLY,
-  dataFrom: 'YYYY-MM-DD',
-  dataTo: 'YYYY-MM-DD',
-  orderEnum: orderEnum.growing
-}
-
+  dataFrom: "YYYY-MM-DD",
+  dataTo: "YYYY-MM-DD",
+  orderEnum: orderEnum.growing,
+  pattern: ''
+};
 
 const tagsState = makeAutoObservable({
   tags: [] as Tag[],
@@ -31,33 +31,37 @@ const tagsState = makeAutoObservable({
   // filters values
   pageNum: 1,
   valuesChanged: false,
-  tagsPerPage: 10 as number | null,  
-  tagsPerPageAc: 10,
-  filter: filterEnum.ALPHABETICALLY,
+  tagsPerPage: defaultValues.tagsPerPage,
+  amountOfPaginNumbers: undefined as number | undefined,
+  filter: defaultValues.filter,
   pattern: "",
-  dateFrom: 'YYYY-MM-DD' as string | null,
-  dateTo: 'YYYY-MM-DD' as string | null,
+  dateFrom: "YYYY-MM-DD",
+  dateTo: "YYYY-MM-DD",
   thisDateFromUnix: null as string | null,
   thisDateToUnix: null as string | null,
   order: orderEnum.growing,
 
-  
   dataDiplayed: false,
-  errorMessage: '',
+  errorMessage: "",
   errSwitch: false,
-  
-  
-  checkIsValuesChanged(){
-    if(this.tagsPerPage !== defaultValues.tagsPerPage || this.filter !== defaultValues.filter || this.dateFrom !== defaultValues.dataFrom || this.dateTo !== defaultValues.dataTo || this.order !== defaultValues.orderEnum){
+
+  checkIsValuesChanged() {
+    if (
+      this.pattern !== defaultValues.pattern ||
+      this.tagsPerPage !== defaultValues.tagsPerPage ||
+      this.filter !== defaultValues.filter ||
+      this.dateFrom !== defaultValues.dataFrom ||
+      this.dateTo !== defaultValues.dataTo ||
+      this.order !== defaultValues.orderEnum
+    ) {
       this.valuesChanged = true;
-    }
-    else{
+    } else {
       this.valuesChanged = false;
     }
   },
 
-  setErrorMessage(errorMessage: string){
-      this.errorMessage = errorMessage;
+  setErrorMessage(errorMessage: string) {
+    this.errorMessage = errorMessage;
   },
 
   setParams({
@@ -67,28 +71,29 @@ const tagsState = makeAutoObservable({
     filter,
     dateFrom,
     dateTo,
-    order
+    order,
   }: {
     pageNum: number;
-    tagsPerPage: number | null;
+    tagsPerPage: number;
     pattern: string;
     filter: filterEnum;
-    dateFrom: string | null;
-    dateTo: string | null;
+    dateFrom: string;
+    dateTo: string;
     order: orderEnum;
   }) {
-
-    if(dateFrom && dateFrom !== 'YYYY-MM-DD'){
+    if (dateFrom !== "YYYY-MM-DD") {
       const dateFromObject = new Date(dateFrom);
-      const fromDateUnix = Math.floor(dateFromObject.getTime() / 1000).toString();
+      const fromDateUnix = Math.floor(
+        dateFromObject.getTime() / 1000
+      ).toString();
       this.thisDateFromUnix = fromDateUnix;
     }
-    if(dateTo && dateTo !== 'YYYY-MM-DD'){
+    if (dateTo !== "YYYY-MM-DD") {
       const dateToObject = new Date(dateTo);
       const toDateUnix = Math.floor(dateToObject.getTime() / 1000).toString();
       this.thisDateToUnix = toDateUnix;
     }
-    
+
     pageNum > 0 && (this.pageNum = pageNum);
     this.tagsPerPage = tagsPerPage;
     this.pattern = pattern;
@@ -99,17 +104,13 @@ const tagsState = makeAutoObservable({
     this.checkIsValuesChanged();
   },
 
-
   async fetchTags() {
     this.isLoading = true;
-
     let tempTagsTab = [] as Tag[];
-    
+
     try {
-      if(this.tagsPerPage !== null && this.tagsPerPage > 0){
-        
-        if (this.tagsPerPage <= 100) {
-          this.tagsPerPageAc = this.tagsPerPage;
+      
+        if (this.tagsPerPage <= 100 && this.tagsPerPage > 0) {
           const data = await fetchTagsAPI({
             pageNum: this.pageNum,
             tagsPerPage: this.tagsPerPage,
@@ -117,14 +118,15 @@ const tagsState = makeAutoObservable({
             filter: this.filter,
             dateFrom: this.thisDateFromUnix,
             dateTo: this.thisDateToUnix,
-            order: this.order
+            order: this.order,
           });
-
+          
           tempTagsTab = [...tempTagsTab, ...data.items];
           this.dataDiplayed = true;
           this.totalTags = data.total;
-        } else if (this.tagsPerPage <= 300) {
-          this.tagsPerPageAc = this.tagsPerPage;
+         
+
+        } else if (this.tagsPerPage <= 300 && this.tagsPerPage > 0) {
           const f_num = (this.pageNum - 1) * this.tagsPerPage;
           const startPage = Math.floor(f_num / 100);
 
@@ -140,7 +142,7 @@ const tagsState = makeAutoObservable({
               filter: this.filter,
               dateFrom: this.thisDateFromUnix,
               dateTo: this.thisDateToUnix,
-              order: this.order
+              order: this.order,
             });
             tempTagsTab = [...tempTagsTab, ...data.items];
             this.totalTags = data.total;
@@ -148,18 +150,14 @@ const tagsState = makeAutoObservable({
           tempTagsTab.splice(0, cutStart);
           tempTagsTab.splice(-cutEnd);
           this.dataDiplayed = true;
+
         } else {
           this.errSwitch = !this.errSwitch;
           this.errorMessage = errorStates.TAG_PER_PAGE_NOT_IN_RANGE;
-          console.error("maximum limit exceeded");
           this.dataDiplayed = false;
         }
-      }
-      else{
-        this.errSwitch = !this.errSwitch;
-        this.errorMessage = errorStates.TAG_PER_PAGE_NOT_IN_RANGE;
-        this.dataDiplayed = false
-      }
+    
+      this.amountOfPaginNumbers = Math.ceil(this.totalTags / this.tagsPerPage);
       this.tags = tempTagsTab;
       this.isLoading = false;
     } catch (error) {
@@ -167,9 +165,12 @@ const tagsState = makeAutoObservable({
       this.errorMessage = errorStates.CONNECTION_ERROR;
       console.error(error);
       this.isLoading = false;
-      this.dataDiplayed = false;
+      this.dataDiplayed = true;
     }
   },
 });
+
+
+export type tagsStoreType = typeof tagsStore;
 
 export const tagsStore = tagsState;

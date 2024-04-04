@@ -10,9 +10,9 @@ import {
   Paper,
   Skeleton,
 } from "@mui/material";
-import { tagsStore } from "../stories/TagsStore";
+import { tagsStoreType } from "../story/TagsStore";
 
-const FetchTags = observer(() => {
+const FetchTags = observer(({tagsStore}: {tagsStore: tagsStoreType}) => {
   useEffect(() => {
     tagsStore.fetchTags().catch((error) => console.error(error));
   }, []);

@@ -12,261 +12,174 @@ import {
 import React from "react";
 import { filterEnum, orderEnum } from "../../services/ApiCommunication";
 import { observer } from "mobx-react-lite";
-import { tagsStore } from "../../stories/TagsStore";
+import { tagsStoreType } from "../../story/TagsStore";
+
 const StyledGridItem = styled(Grid)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   marginTop: theme.spacing(2),
-  [theme.breakpoints.up('xs')]: {
-    justifyContent: 'center'
+  [theme.breakpoints.up("xs")]: {
+    justifyContent: "center",
+    '& .MuiFormControl-root': {
+      width: '80%'
+    },
   },
-  [theme.breakpoints.up('sm')]: {
-    justifyContent: 'start'
+  [theme.breakpoints.up("sm")]: {
+    justifyContent: "start",
+    '& .MuiFormControl-root': {
+      width: '60%'
+    },
   },
 }));
-const ColapseInputs = observer(() => {
 
+const ColapseInputs = observer(
+  ({ setOpen, tagsStore }: { setOpen: (value: boolean) => void, tagsStore: tagsStoreType }) => {
+    const orderList = {
+      growing: orderEnum.growing,
+      descending: orderEnum.descending,
+    };
 
+    const sortList = {
+      alphabetically: filterEnum.ALPHABETICALLY,
+      popularity: filterEnum.POPULAR,
+      activity: filterEnum.ACTIVITY,
+    };
 
-
-  const handleChangeSelectOrder = (event: SelectChangeEvent) => {
-    let value: orderEnum | null = null;
-    const selectedValue = event?.target.value;
-    switch (selectedValue) {
-      case "1":
-        value = orderEnum.growing;
-        break;
-      case "2":
-        value = orderEnum.descending;
-        break;
-      default:
-        console.warn("Unknown filter selected:", selectedValue);
-        break;
-    }
-
-    if (value !== null) {
+    const handleChangeSelectOrder = (event: SelectChangeEvent) => {
       tagsStore.setParams({
+        ...tagsStore,
         pageNum: 1,
-        tagsPerPage: tagsStore.tagsPerPage,
-        pattern: tagsStore.pattern,
-        filter: tagsStore.filter,
-        dateFrom: tagsStore.dateFrom,
-        dateTo: tagsStore.dateTo,
-        order: value,
+        order: event.target.value as orderEnum,
       });
-    }
-  };
+    };
 
-  const handleDateToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.currentTarget.value);
-    tagsStore.setParams({
-      pageNum: 1,
-      tagsPerPage: tagsStore.tagsPerPage,
-      pattern: tagsStore.pattern,
-      filter: tagsStore.filter,
-      dateFrom: tagsStore.dateFrom,
-      dateTo: event.currentTarget.value,
-      order: tagsStore.order,
-    });
-  };
-  const handleDateFromChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    tagsStore.setParams({
-      pageNum: 1,
-      tagsPerPage: tagsStore.tagsPerPage,
-      pattern: tagsStore.pattern,
-      filter: tagsStore.filter,
-      dateFrom: event.currentTarget.value,
-      dateTo: tagsStore.dateTo,
-      order: tagsStore.order,
-    });
-  };
-
-  const handleChangeSelectSort = (event: SelectChangeEvent) => {
-    let value: filterEnum | null = null;
-
-    const selectedValue = event.target.value;
-
-
-
-    switch (selectedValue) {
-      case "1":
-        value = filterEnum.ALPHABETICALLY;
-        break;
-      case "2":
-        value = filterEnum.POPULAR;
-        break;
-      case "3":
-        value = filterEnum.ACTIVITY;
-        break;
-      default:
-        console.warn("Unknown filter selected:", selectedValue);
-        break;
-    }
-
-    if (value !== null) {
+    const handleDateToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      console.log(event.currentTarget.value);
       tagsStore.setParams({
+        ...tagsStore,
         pageNum: 1,
-        tagsPerPage: tagsStore.tagsPerPage,
-        pattern: tagsStore.pattern,
-        filter: value,
-        dateFrom: tagsStore.dateFrom,
-        dateTo: tagsStore.dateTo,
-        order: tagsStore.order,
+        dateTo: event.currentTarget.value,
       });
-    }
-  };
-  const getFilterValue = (filter: filterEnum | orderEnum) => {
-    switch (filter) {
-      case filterEnum.ALPHABETICALLY:
-        return "1";
-      case orderEnum.growing:
-        return "1";
-      case filterEnum.POPULAR:
-        return "2";
-      case orderEnum.descending:
-        return "2";
-      case filterEnum.ACTIVITY:
-        return "3";
-      default:
-        return "1";
-    }
-  };
+    };
+    const handleDateFromChange = (
+      event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      tagsStore.setParams({
+        ...tagsStore,
+        pageNum: 1,
+        dateFrom: event.currentTarget.value,
+      });
+    };
 
-  const handleChangeTagsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) =>
-    tagsStore.setParams({
-      pageNum: 1,
-      tagsPerPage: parseInt(event.target.value),
-      pattern: tagsStore.pattern,
-      filter: tagsStore.filter,
-      dateFrom: tagsStore.dateFrom,
-      dateTo: tagsStore.dateTo,
-      order: tagsStore.order,
-    });
+    const handleChangeSelectSort = (event: SelectChangeEvent) => {
+      tagsStore.setParams({
+        ...tagsStore,
+        pageNum: 1,
+        filter: event.target.value as filterEnum,
+      });
+    };
 
-  return (
-    <Grid
-      mt={"15px"}
-      container
-      justifyContent={"start"}
-      sx={{ position: "relative", zIndex: "10" }}
-    >
-      <StyledGridItem item
-              xs={12}
-              sm={4}
-      >
-        <TextField
-          sx={{
-            width: '60%'
-          }}
-          type="number"
-          value={tagsStore.tagsPerPage}
-          onChange={handleChangeTagsPerPage}
-          label="Tags per page"
-          variant="standard"
-        />
-      </StyledGridItem>
+    const handleChangeTagsPerPage = (
+      event: React.ChangeEvent<HTMLInputElement>
+    ) =>
+      tagsStore.setParams({
+        ...tagsStore,
+        pageNum: 1,
+        tagsPerPage: parseInt(event.target.value),
+      });
 
-      <StyledGridItem item
-              xs={12}
-              sm={4}
-      >
-        <FormControl variant="standard"
-         sx={{
-          width: '60%'
-        }}
-        >
-          <InputLabel id="sort-select-label">Sort by</InputLabel>
-          <Select
-            labelId="sort-select-label"
-            id="sort-select"
-            value={getFilterValue(tagsStore.filter)}
-            label="sort by"
-            onChange={handleChangeSelectSort}
-          >
-            <MenuItem value="1">alphabetically</MenuItem>
-            <MenuItem value="2">popularity</MenuItem>
-            <MenuItem value="3">activity</MenuItem>
-          </Select>
-        </FormControl>
-      </StyledGridItem>
-      <StyledGridItem item
-              xs={12}
-              sm={4}
-      >
-        <FormControl variant="standard"
-         sx={{
-          width: '60%'
-        }}
-        >
-          <InputLabel id="order-select-label">Kolejność</InputLabel>
-          <Select
-            onChange={handleChangeSelectOrder}
-            labelId="order-select-label"
-            id="order-select"
-            value={getFilterValue(tagsStore.order)}
-            label="order"
-          >
-            <MenuItem value="1">Growing</MenuItem>
-            <MenuItem value="2">Descending</MenuItem>
-          </Select>
-        </FormControl>
-      </StyledGridItem>
-      <StyledGridItem item
-              xs={12}
-              sm={4}
-      >
-        <TextField
-         sx={{
-          width: '60%'
-        }}
-          onChange={handleDateToChange}
-          type="date"
-          value={tagsStore.dateTo}
-          variant="standard"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          label="Created Before"
-        />
-      </StyledGridItem>
-      <StyledGridItem item
-              xs={12}
-              sm={4}
-      >
-        <TextField
-         sx={{
-          width: '60%'
-        }}
-          onChange={handleDateFromChange}
-          type="date"
-          value={tagsStore.dateFrom}
-          variant="standard"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          label="Created After"
-        />
-      </StyledGridItem>
+    return (
+      <Grid
+        mt={"15px"}
+        container
+        justifyContent={"start"}
+        sx={{ position: "relative", zIndex: "10" }}>
+        <StyledGridItem item xs={12} sm={4}>
+          <TextField
+            type="number"
+            value={tagsStore.tagsPerPage}
+            onChange={handleChangeTagsPerPage}
+            label="Tags per page"
+            variant="standard"
+          />
+        </StyledGridItem>
 
-      <Grid item xs={12}
-         mt={2}
-         display={"flex"}
-         justifyContent={"center"}
-         width={"100"}
-         >
-        <Button
-          variant="text"
-          onClick={() => {
-            tagsStore.fetchTags().catch((error) => console.error(error));
-          }}
-        >
-          Apply
-        </Button>
+        <StyledGridItem item xs={12} sm={4}>
+          <FormControl
+            variant="standard">
+            <InputLabel id="sort-select-label">Sort by</InputLabel>
+            <Select
+              labelId="sort-select-label"
+              id="sort-select"
+              value={tagsStore.filter}
+              label="sort by"
+              onChange={handleChangeSelectSort}>
+              {Object.entries(sortList).map(([key, value]) => {
+                return <MenuItem value={value}>{key}</MenuItem>;
+              })}
+            </Select>
+          </FormControl>
+        </StyledGridItem>
+        <StyledGridItem item xs={12} sm={4}>
+          <FormControl
+            variant="standard">
+            <InputLabel id="order-select-label">Order</InputLabel>
+            <Select
+              onChange={handleChangeSelectOrder}
+              labelId="order-select-label"
+              id="order-select"
+              value={tagsStore.order}
+              label="order">
+              {Object.entries(orderList).map(([key, value]) => {
+                return <MenuItem value={value}>{key}</MenuItem>;
+              })}
+            </Select>
+          </FormControl>
+        </StyledGridItem>
+        <StyledGridItem item xs={12} sm={4}>
+          <TextField
+            onChange={handleDateToChange}
+            type="date"
+            value={tagsStore.dateTo}
+            variant="standard"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            label="Created Before"
+          />
+        </StyledGridItem>
+        <StyledGridItem item xs={12} sm={4}>
+          <TextField
+            onChange={handleDateFromChange}
+            type="date"
+            value={tagsStore.dateFrom}
+            variant="standard"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            label="Created After"
+          />
+        </StyledGridItem>
+
+        <Grid
+          item
+          xs={12}
+          mt={2}
+          display={"flex"}
+          justifyContent={"center"}
+          width={"100"}>
+          <Button
+            variant="text"
+            onClick={() => {
+              setOpen(false);
+              tagsStore.fetchTags().catch((error) => console.error(error));
+            }}>
+            Apply
+          </Button>
+        </Grid>
       </Grid>
-    </Grid>
-  );
-});
+    );
+  }
+);
 
 export default ColapseInputs;
